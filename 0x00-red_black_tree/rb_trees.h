@@ -44,6 +44,8 @@ size_t binary_tree_depth(const rb_tree_t *tree);
 int binary_tree_is_none(const rb_tree_t *node);
 rb_tree_t *_insert(rb_tree_t *tree, size_t level, int value);
 size_t binary_tree_height(const rb_tree_t *tree);
+rb_tree_t *array_to_rb_tree(int *array, size_t size);
+
 
 
 

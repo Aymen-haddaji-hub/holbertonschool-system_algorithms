@@ -40,14 +40,14 @@ typedef struct rb_tree_s
 rb_tree_t *rb_tree_node(rb_tree_t *parent, int value, rb_color_t color);
 int rb_tree_is_valid(const rb_tree_t *tree);
 rb_tree_t *rb_tree_insert(rb_tree_t **tree, int value);
-size_t binary_tree_depth(const rb_tree_t *tree);
-int binary_tree_is_none(const rb_tree_t *node);
-rb_tree_t *_insert(rb_tree_t *tree, size_t level, int value);
-size_t binary_tree_height(const rb_tree_t *tree);
+rb_tree_t *binary_tree_insert_left(rb_tree_t *parent, int value);
+
 rb_tree_t *array_to_rb_tree(int *array, size_t size);
 
-
-
-
+void rb_tree_insert_fix(rb_tree_t **tree, rb_tree_t *node);
+void right_leaf(rb_tree_t **tree, rb_tree_t *node);
+void left_leaf(rb_tree_t **tree, rb_tree_t *node);
+void left_rotate(rb_tree_t **tree, rb_tree_t *node);
+void right_rotate(rb_tree_t **tree, rb_tree_t *node);
 
 #endif /* _RB_TREES_H_ */

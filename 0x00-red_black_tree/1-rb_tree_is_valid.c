@@ -3,12 +3,10 @@
 /**
  * tree_validity - recursively valildates RB tree properties
  * @tree: pointer to root of tree to validate
- * @num_black: number of black nodes, passed by address
  * Return: 1 if valid else 0
  */
 int tree_validity(const rb_tree_t *tree)
 {
-
 	if (!tree->left && !tree->right)
 		return (1);
 
@@ -40,7 +38,10 @@ int tree_validity(const rb_tree_t *tree)
  */
 int rb_tree_is_valid(const rb_tree_t *tree)
 {
-    if (tree->color != BLACK)
+	if (!tree)
+		return (0);
+
+	if (tree->color != BLACK)
 		return (0);
 
 	return (tree_validity(tree->right) && tree_validity(tree->left));

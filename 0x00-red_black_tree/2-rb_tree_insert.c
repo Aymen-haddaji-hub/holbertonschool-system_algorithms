@@ -1,119 +1,172 @@
 #include "rb_trees.h"
 
 /**
-* binary_tree_depth - measures the depth of a node in a binary tree
-* @tree: node to check
-* Return: depth
-*/
-
-size_t binary_tree_depth(const rb_tree_t *tree)
+ *left_rotate - rotates subtree left
+ * @tree: pointer to root node
+ * @node: pointer to inserted node.
+ */
+void left_rotate(rb_tree_t **tree, rb_tree_t *node)
 {
-	int cont = 0;
+	rb_tree_t *new = node->right;
 
-	if (tree == NULL)
-		return (0);
-	while (tree->parent != NULL)
-	{
-		cont++;
-		tree = tree->parent;
-	}
-	return (cont);
-}
-/**
-* binary_tree_is_none - checks if a node is a leaf
-* @node: parent node
-* Return: pointer to the new node
-*/
-
-int binary_tree_is_none(const rb_tree_t *node)
-{
-	if (node == NULL)
-		return (0);
-	if (node->left == NULL && node->right == NULL)
-		return (1);
-	return (0);
-}
-/**
-* _insert - function to insert node
-* @tree: pointer to tree
-* @level: level to insert node
-* @value: value of the new node
-* Return: the node inserted
-*/
-
-rb_tree_t *_insert(rb_tree_t *tree, size_t level, int value)
-{
-	rb_tree_t *left, *right;
-
-	if (tree == NULL)
-		return (NULL);
-	if (binary_tree_depth(tree) == level)
-	{
-		if (binary_tree_is_none(tree))
-			return (tree->left = rb_tree_node(tree, value, RED));
-		if (tree->left != NULL && tree->right == NULL)
-			return (tree->right = rb_tree_node(tree, value, RED));
-		return (NULL);
-	}
-	left = _insert(tree->left, level, value);
-	if (left == NULL)
-		right = _insert(tree->right, level, value);
+	if (new == NULL)
+		return;
+	node->right = new->left;
+	if (new->left)
+		new->left->parent = node;
+	new->left = node;
+	new->parent = node->parent;
+	if (node->parent == NULL)
+		*tree = new;
+	else if (node->parent->left == node)
+		node->parent->left = new;
 	else
-		return (left);
-	return (right);
+		node->parent->right = new;
+
+	node->parent = new;
 }
 
 /**
-* binary_tree_height - measures the height of a binary tree
-* @tree: node to check
-* Return: height
-*/
-
-size_t binary_tree_height(const rb_tree_t *tree)
+ * right_rotate - rotates subtree right
+ * @tree: pointer to root node
+ * @node: pointer to inserted node.
+ */
+void right_rotate(rb_tree_t **tree, rb_tree_t *node)
 {
-	int lheight;
-	int rheight;
+	rb_tree_t *new = node->left;
 
-	if (tree == NULL || binary_tree_is_none(tree) == 1)
-		return (0);
-	lheight = binary_tree_height(tree->left);
-	rheight = binary_tree_height(tree->right);
+	if (new == NULL)
+		return;
+	node->left = new->right;
+	if (new->right)
+		new->right->parent = node;
+	new->right = node;
+	new->parent = node->parent;
+	if (node->parent == NULL)
+		*tree = new;
+	else if (node->parent->left == node)
+		node->parent->left = new;
+	else
+		node->parent->right = new;
 
-	if (lheight >= rheight)
-		return (1 + lheight);
-	return (1 + rheight);
+	node->parent = new;
 }
 
 /**
-* rb_tree_insert - binary tree node
-* @tree: pointer to the tree node
-* @value: value store to inserted
-* Return: the inserted node
-*/
-
-rb_tree_t *rb_tree_insert(rb_tree_t **tree, int value)
+ * fix_insertion - fixes Red Black Tree after insertion
+ * @tree: pointer to root node
+ * @node: pointer to node inserted node
+ * Return: pointer to inserted node
+ */
+void fix_insertion(rb_tree_t **tree, rb_tree_t *node)
 {
-	size_t level, i, tmp = 0;
-	rb_tree_t *node = NULL;
-
-	if (*tree == NULL)
-	{
-		*tree = rb_tree_node((rb_tree_t *)*tree, value, BLACK);
-		return (*tree);
-	}
-	level = binary_tree_height(*tree);
-	for (i = 0; i <= level; i++)
-	{
-		node = (rb_tree_t *) _insert((rb_tree_t *)*tree, i, value);
-		if (node != NULL)
-			break;
-	}
 	while (node->parent && node->parent->color == RED)
 	{
-		tmp = node->parent->n;
-		node->parent->n = node->n;
-		node->n = tmp;
-		node = node->parent;
+		if (node->parent->parent && node->parent == node->parent->parent->left)
+			right_leaf(tree, node);
+		else
+			left_leaf(tree, node);
+
 	}
+	(*tree)->color = BLACK;
+}
+
+/**
+ * right_leaf -  fixes the right side
+ * @tree: double pointer to root node
+ * @node: pointer to node where wrong color
+ */
+
+void right_leaf(rb_tree_t **tree, rb_tree_t *node)
+{
+
+	if (node->parent->parent->right && node->parent->parent->right->color == RED)
+	{
+		node->parent->color = BLACK;
+		node->parent->parent->right->color = BLACK;
+		node->parent->parent->color = RED;
+		node = node->parent->parent;
+	}
+	else
+	{
+		if (node == node->parent->right)
+		{
+			node = node->parent;
+			left_rotate(tree, node);
+		}
+		node->parent->color = BLACK;
+		node->parent->parent->color = RED;
+		right_rotate(tree, node->parent->parent);
+	}
+}
+
+/**
+ * left_leaf -  fixes the left side
+ * @tree: double pointer to root node
+ * @node: pointer to node where wrong color
+ */
+void left_leaf(rb_tree_t **tree, rb_tree_t *node)
+{
+
+	if (node->parent->parent->left && node->parent->parent->left->color == RED)
+	{
+		node->parent->color = BLACK;
+		node->parent->parent->left->color = BLACK;
+		node->parent->parent->color = RED;
+		node = node->parent->parent;
+	}
+	else
+	{
+		if (node == node->parent->left)
+		{
+			node = node->parent;
+			right_rotate(tree, node);
+		}
+		node->parent->color = BLACK;
+		node->parent->parent->color = RED;
+		left_rotate(tree, node->parent->parent);
+	}
+}
+
+/**
+ * rb_tree_insert - inserts node into RB Tree
+ * @tree: address of pointer to root node
+ * @value: new value to insert
+ * Return: new node on success else NULL
+ */
+rb_tree_t *rb_tree_insert(rb_tree_t **tree, int value)
+{
+	rb_tree_t *node, *prev = NULL, *current;
+
+	if (!tree)
+		return (NULL);
+
+	current = *tree;
+
+	while (current)
+	{
+		prev = current;
+		if (value < current->n)
+			current = current->left;
+		else if (value > current->n)
+			current = current->right;
+		else
+			return (NULL);
+	}
+
+	node = rb_tree_node(prev, value, RED);
+
+	if (!node)
+		return (NULL);
+	if (!prev)
+	{
+		node->color = BLACK;
+		return (*tree = node);
+	}
+	if (value < prev->n)
+		prev->left = node;
+	else
+		prev->right = node;
+	fix_insertion(tree, node);
 	return (node);
 }

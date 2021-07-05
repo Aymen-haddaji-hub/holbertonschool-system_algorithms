@@ -40,5 +40,8 @@ int tree_validity(const rb_tree_t *tree)
  */
 int rb_tree_is_valid(const rb_tree_t *tree)
 {
+    if (tree->color != BLACK)
+		return (0);
+
 	return (tree_validity(tree->right) && tree_validity(tree->left));
 }

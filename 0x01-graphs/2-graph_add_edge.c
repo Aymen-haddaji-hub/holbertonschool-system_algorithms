@@ -3,49 +3,51 @@
 /**
  * init_edge - verify for connection between
  * source and destination.
- * @src: pointer to src vertex.
- * @dest: pointer to dest vertex.
+ * @vertex_source: pointer to src vertex.
+ * @vertex_destination: pointer to dest vertex.
  * Return: 1 if connection exist otherwise 0.
  **/
 
-int init_edge(vertex_t *src, vertex_t *dest)
-{
-	edge_t *tmp;
 
-	if (!src || !dest)
+int init_edge(vertex_t *vertex_source, vertex_t *vertex_destination)
+{
+	edge_t *tmp = NULL;
+
+	if (!vertex_source || vertex_destination)
 		return (0);
 
-	tmp = src->edges;
+	tmp = vertex_source->edges;
 
 	while (tmp)
 	{
-		if (tmp->dest == dest)
-			return (0);
+		if (tmp->dest == vertex_destination)
+			return (1);
 
 		tmp = tmp->next;
 	}
+
 	return (0);
 }
 
 /**
  * get_vertex - find the vertex that contain str.
  * @graph: pointer to graph
- * @str: pointer to string
+ * @s: pointer to string
  * Return: pointer to found vertex or NULL on failure
  **/
 
-vertex_t *get_vertex(graph_t *graph, const char *str)
+vertex_t *get_vertex(graph_t *graph, const char *s)
 {
-	vertex_t *tmp = NULL;
+	vertex_t *tmp;
 
-	if (!graph || !str)
+	if (!graph || !s)
 		return (NULL);
 
 	tmp = graph->vertices;
 
 	while (tmp)
 	{
-		if (strcmp(tmp->content, str) == 0)
+		if (strcmp(tmp->content, s) == 0)
 			return (tmp);
 		tmp = tmp->next;
 	}
@@ -55,19 +57,19 @@ vertex_t *get_vertex(graph_t *graph, const char *str)
 
 /**
  * connect_edge - connect 2 vertices with new edge.
- * @src: pointer to src vertex
- * @dest: pointer to dest vertex
+ * @vertex_source: pointer to src vertex
+ * @vertex_destination: pointer to dest vertex
  * Return: returns 1 on success otherwise 0
  **/
 
-int connect_edge(vertex_t *src, vertex_t *dest)
+int connect_edge(vertex_t *vertex_source, vertex_t *vertex_destination)
 {
 	edge_t *tmp, *new;
 
-	if (!src || !dest)
+	if (!vertex_source || !vertex_destination)
 		return (0);
 
-	tmp = src->edges;
+	tmp = vertex_source->edges;
 
 	new = NULL;
 
@@ -79,18 +81,19 @@ int connect_edge(vertex_t *src, vertex_t *dest)
 	if (!new)
 		return (0);
 
-	new->dest = dest;
+	new->dest = vertex_destination;
 	new->next = NULL;
-	if (!src->edges)
+
+	if (!vertex_source->edges)
 	{
-		src->edges = new;
-		src->nb_edges += 1;
+		vertex_source->edges = new;
+		vertex_source->nb_edges += 1;
 		return (1);
 	}
 	else
 	{
 		tmp->next = new;
-		src->nb_edges += 1;
+		vertex_source->nb_edges += 1;
 		return (1);
 	}
 
@@ -103,42 +106,39 @@ int connect_edge(vertex_t *src, vertex_t *dest)
  * @src: string identifying the vertex to make the connection from
  * @dest: string identifying the vertex to connect to
  * @type: type of edge
- * Return: returns 1 on success otheriwse 0
+ * Return: returns 1 on success or 0 in failure.
  */
-int graph_add_edge(graph_t *graph,
-				 const char *src,
-				const char *dest,
-				edge_type_t type)
+
+int graph_add_edge(graph_t *graph, const char *src, const char *dest,
+			 edge_type_t type)
 {
-	vertex_t *source, *destination;
+	vertex_t *vertex_source, *vertex_destination;
 
 	if (!graph || !src || !dest ||
-			(type != UNIDIRECTIONAL && type != BIDIRECTIONAL))
+		 (type != UNIDIRECTIONAL && type != BIDIRECTIONAL))
 		return (0);
 
-	source = get_vertex(graph, src);
-	destination = get_vertex(graph, dest);
-
-	if (!source)
-		return (0);
-
-	if (!destination)
-		return (0);
+	vertex_source = get_vertex(graph, src);
+	vertex_destination = get_vertex(graph, dest);
 
 	if (type == BIDIRECTIONAL)
 	{
-		if (init_edge(source, destination) && init_edge(destination, source))
+		if (init_edge(vertex_source, vertex_destination)
+			&& init_edge(vertex_destination, vertex_source))
 			return (1);
 
-		if (!connect_edge(source, destination) && !connect_edge(destination, source))
+		if (!connect_edge(vertex_source, vertex_destination))
+			return (0);
+
+		if (!connect_edge(vertex_destination, vertex_source))
 			return (0);
 	}
 	else
 	{
-		if (init_edge(source, destination))
+		if (init_edge(vertex_source, vertex_destination))
 			return (1);
 
-		if (!connect_edge(source, destination))
+		if (!connect_edge(vertex_source, vertex_destination))
 			return (0);
 	}
 

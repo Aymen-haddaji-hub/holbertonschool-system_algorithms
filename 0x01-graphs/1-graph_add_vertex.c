@@ -22,19 +22,24 @@ vertex_t *graph_add_vertex(graph_t *graph, const char *str)
 			break;
 		tmp = tmp->next;
 	}
-	new = malloc(sizeof(vertex_t));
+	new = malloc(sizeof(*tmp));
 	if (!new)
 		return (NULL);
 	new->content = strdup(str);
-	if (!new->content)
+	new->index = 0;
+	new->edges = NULL;
+	new->nb_edges = 0;
+	new->next = NULL;
+	if (!tmp)
 	{
-		free(new);
-		return (NULL);
-	}
-	new->index = graph->nb_vertices++;
-	if (tmp)
-		tmp->next = new;
-	else
+		new->index = 0;
 		graph->vertices = new;
+	}
+	else
+	{
+		new->index = tmp->index + 1;
+		tmp->next = new;
+	}
+	graph->nb_vertices++;
 	return (new);
 }

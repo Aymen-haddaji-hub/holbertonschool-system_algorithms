@@ -12,12 +12,12 @@ int path_exists(nary_tree_t const *root, char const * const *path)
 
 	if (!root || !path || !*path)
 		return (0);
-	for (i = 0; path[i]; i++, root = root->children)
+	for (i = 0; path[i]; ++i, root = root->children)
 	{
+		while (root && strcmp(root->content, path[i]) != 0)
+			root = root->next;
 		if (!root)
 			return (0);
-		while (root->children && strcmp(root->content, path[i]) != 0)
-			root = root->next;
 	}
 	return (1);
 }
